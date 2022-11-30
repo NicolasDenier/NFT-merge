@@ -7,16 +7,7 @@ Set up: [Create NFT with hardhat](https://capbloc.notion.site/Create-NFT-with-ha
 To run a script:  
 `npx hardhat run scripts/myscript.js --network mumbai`
 
-# Sample Hardhat Project
+## Dependancies
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
-
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
-```
+`npm install hardhat`  
+`npm install image-js`

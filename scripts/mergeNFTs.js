@@ -6,26 +6,33 @@
 // global scope, and execute the script.
 const hre = require("hardhat");
 
-function get_image(url){
-    image = fetch(url)
-    .then(response => response.blob())
-    .then(imageBlob => {
-            return imageBlob // process image ?
-  });
-  return image;
+async function get_image(url){
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  return buffer;
 }
 
-function combine_images(CID1, CID2){
-    const base_url = "https://gateway.pinata.cloud/ipfs/";
-    let url1 = base_url+CID1;
-    let url2 = base_url+CID2;
+async function combine_images(CID1, CID2){
+  // Combine two images side by side from pinata
+  const { Image } = require('image-js');
+  const base_url = "https://gateway.pinata.cloud/ipfs/";
+  let url1 = base_url+CID1;
+  let url2 = base_url+CID2;
 
-    let img1 = get_image(url1);
-    let img2 = get_image(url2);
+  let buffer1 = await get_image(url1);
+  let buffer2 = await get_image(url2);
 
-    // assemble images side by side (idk how)
-    // (ideally the axis depends on the parity of the level attribute)
-    return newImage;
+  let image2 = Image.load(buffer2);
+
+  let merged_img = await Image.load(buffer1).then(function (image1) {
+      let new_img = image1.resize({width:2*image1.width, height:image1.height});
+      new_img.insert(image1, {inPlace:true});
+      new_img.insert(image2, {x: image1.width,inPlace:true});
+      return new_img.toBuffer();
+  });
+  // (ideally the axis depends on the parity of the level attribute)
+  return merged_img;
 }
 
 function post_image(image) {
