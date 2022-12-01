@@ -45,7 +45,7 @@ async function combine_images(CID1, CID2){
 
   // Image object can be easily processed with image-js library
   const { Image } = require('image-js');
-  let image2 = Image.load(buffer2);
+  let image2 = await Image.load(buffer2);
 
   let merged_img = await Image.load(buffer1).then(function (image1) {
       // new_img is twice as wide as image1 (image1 and image2 have the same size)
