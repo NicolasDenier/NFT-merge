@@ -6,7 +6,8 @@
 // global scope, and execute the script.
 const hre = require("hardhat");
 const categories = ['A','B'];
-TOKENURI="https://gateway.pinata.cloud/ipfs/CID"; // this link is incorrect, replace CID with your image metadata CID on pinata
+CID="QmP4jUAshE4Ns4KVYMoZ4uRUy1EkfSspHa3PrAXp7BF5p1"
+TOKENURI=`https://gateway.pinata.cloud/ipfs/${CID}`; // this link is incorrect, replace CID with your image metadata CID on pinata
 
 // Take randomly a category from a list
 function generate_category(categories) {
@@ -16,13 +17,13 @@ function generate_category(categories) {
 
 async function main() {
 
-  const Card = await hre.ethers.getContractFactory("card");
+  const Card = await hre.ethers.getContractFactory("Card");
   const card = await Card.attach(process.env.SMART_CONTRACT_ADDRESS);
 
   // Metamask public key 
   // Token uri = metadata URL
   let category = generate_category(categories);
-  await card.mintNFT(process.env.PUBLIC_KEY, TOKENURI, category, 1);
+  await card.mintNFT(process.env.PUBLIC_KEY, TOKENURI, "A"); // category instead of "A"
 
   console.log(
     `deployed to ${card.address}`

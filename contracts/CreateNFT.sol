@@ -14,7 +14,6 @@ contract Card is ERC721URIStorage, Ownable {
     constructor() ERC721("NFT Game Card", "GC") {}
 
     mapping(uint256 => string) categories;
-    mapping(uint256 => uint256) categories_level;
     mapping(uint256 => address) private _owners;
 
     function ownerOf(uint256 tokenId)
@@ -32,17 +31,10 @@ contract Card is ERC721URIStorage, Ownable {
         return owner;
     }
 
-    function upper_level(uint256 tokenId) public returns (uint256) {
-        uint256 level = categories_level[tokenId];
-        level += 1;
-        return level;
-    }
-
     function mintNFT(
         address recipient,
         string memory tokenURI,
-        string memory category,
-        uint256 level
+        string memory category
     ) public onlyOwner returns (uint256) {
         _tokenIds.increment();
 
@@ -50,7 +42,6 @@ contract Card is ERC721URIStorage, Ownable {
         _mint(recipient, newItemId);
         _setTokenURI(newItemId, tokenURI);
         categories[newItemId] = category;
-        categories_level[newItemId] = level;
 
         return newItemId;
     }
@@ -58,16 +49,16 @@ contract Card is ERC721URIStorage, Ownable {
     function merge(
         uint256 tokenId1,
         uint256 tokenId2,
-        string memory tokenURI
+        string memory tokenURI,
+        string memory category
     ) public {
         if (
             keccak256(bytes(categories[tokenId1])) ==
             keccak256(bytes(categories[tokenId2]))
         ) {
             address recipient = ownerOf(tokenId1); // make something to decide who owns the new NFT
-            uint256 level = upper_level(tokenId1);
 
-            mintNFT(recipient, tokenURI, categories[tokenId1], level);
+            mintNFT(recipient, tokenURI, category);
 
             // burn the two NFTs
             _burn(tokenId1);

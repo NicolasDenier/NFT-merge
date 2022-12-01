@@ -1,11 +1,8 @@
-{
-  "attributes": [
-    {
-      "trait_type": "sample",
-      "value": "1"
+{"attributes": [
+    { "trait_type": "category", "value": "A"},
+    { "trait_type": "level", "value": "1"}
+    ],
+     "description": "testing NFTs",
+     "image": "https://gateway.pinata.cloud/ipfs/QmQfXfbjEanGVF81oAJzxkvxcVo2NjoNVkyY8tUhaFG5sN", 
+     "name": "QmQfXfbjEanGVF81oAJzxkvxcVo2NjoNVkyY8tUhaFG5sN.png"
     }
-  ],
-  "description": "testing NFTs",
-  "image": "https://gateway.pinata.cloud/ipfs/your_image_CID_from_pinata", 
-  "name": "1.png"
-}

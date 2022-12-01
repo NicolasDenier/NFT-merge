@@ -8,9 +8,23 @@ const hre = require("hardhat");
 const axios = require('axios')
 const FormData = require('form-data')
 const fs = require('fs')
+const categories = ['A','B'];
+let category = ''
 const JWT = `Bearer ${process.env.PINATA_JWT}`
 const imgname='new_img_test.png';
+const base_url = "https://gateway.pinata.cloud/ipfs/";
+let CID = '';
 
+// Take randomly a category from a list
+function generate_category(categories) {
+  let randomIndex = Math.floor(Math.random()*categories.length);
+  return categories[randomIndex];
+}
+
+// Increment the level
+function upper_level(level) {
+  return level+1;
+}
 
 // Get an image (as buffer) from an url
 async function get_image(url){
@@ -22,7 +36,6 @@ async function get_image(url){
 
 // Combine two images side by side from pinata
 async function combine_images(CID1, CID2){
-  const base_url = "https://gateway.pinata.cloud/ipfs/";
   let url1 = base_url+CID1;
   let url2 = base_url+CID2;
 
@@ -50,9 +63,9 @@ async function combine_images(CID1, CID2){
 }
 
 // Post a file to pinata
-const pinFileToIPFS = async (filename) => {
+const pinFileToIPFS = async (filepath, filename) => {
   const formData = new FormData();
-  const src = filename;
+  const src = filepath;
   
   const file = fs.createReadStream(src)
   formData.append('file', file)
@@ -76,37 +89,63 @@ const pinFileToIPFS = async (filename) => {
       }
     });
     console.log(res.data);
+    CID = res.data['IpfsHash'];
   } catch (error) {
     console.log(error);
   }
 }
 
-function create_metadata(CID) {
-    // create metadata.json with image url, category, level, name, etc
-    return tokenURI;
+// create metadata.json with image url, category, level, name, etc
+async function create_metadata(CID, level) {
+    let text_metadata = '{"attributes": ['+
+    `{ "trait_type": "category", "value": "${category}"},`+
+    `{ "trait_type": "level", "value": "${upper_level(level)}"}`+
+    '],'+
+    ' "description": "testing NFTs",'+
+    ` "image": "https://gateway.pinata.cloud/ipfs/${CID}", `+
+    ` "name": "${CID}.png"`+
+    '}';
+
+    // parse json
+    var jsonObj = JSON.parse(text_metadata); 
+    // stringify JSON Object
+    var jsonContent = JSON.stringify(jsonObj);
+
+    let filename = "metadata.json"
+    fs.writeFile(filename, jsonContent, 'utf8', function (err) {
+      if (err) {
+          console.log("An error occured while writing JSON Object to File.");
+          return console.log(err);
+      }
+   
+      console.log("JSON metadata has been saved.");
+  });
+    return filename;
 }
 
-async function main(CID1, CID2) {
+async function main(CID1, CID2, level) {
+  category = generate_category(categories);
 
-  combine_images(CID1,CID2)
-  TOKENURI = setTimeout(function() {
-    pinFileToIPFS(imgname);
-  }, 2000);
+  combine_images(CID1,CID2);
+  let TOKENURI = '';
 
+  setTimeout(async () => {
+    await pinFileToIPFS(imgname, imgname);
+    // Create metadata.json
+    let metadatafile = await create_metadata(CID, level);
+    await pinFileToIPFS(metadatafile, CID+'-metadata.json');
+
+    TOKENURI = base_url+CID; // CID has changed and is now metadata's CID
+    let tokenId1 = base_url+CID1; 
+    let tokenId2 = base_url+CID2; 
   
-  // Post metadata to pinata and get the associated tokenURI
+    const Card = await hre.ethers.getContractFactory("Card");
+    const card = await Card.attach(process.env.SMART_CONTRACT_ADDRESS);
 
+    await card.merge(tokenId1, tokenId2, TOKENURI, category);
 
-  const Card = await hre.ethers.getContractFactory("card");
-  const card = await Card.attach(process.env.SMART_CONTRACT_ADDRESS);
-
-  // get somehow the token ids from CID1 and CID2 (from metadata?)
-
-  await card.merge(tokenId1, tokenId1, TOKENURI);
-
-  console.log(
-    `deployed to ${card.address}`
-  );
+  console.log(`deployed to ${card.address}`);
+  }, 2000);
 }
 
 // We recommend this pattern to be able to use async/await everywhere and properly handle errors.
